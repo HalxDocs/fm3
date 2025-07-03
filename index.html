@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary-color: #2574a9;
@@ -39,6 +38,34 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 15px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            background-color: var(--accent-color);
         }
 
         /* Auth Section */
@@ -713,6 +740,12 @@
 </head>
 <body>
     <div class="container">
+        <!-- Notification -->
+        <div id="notification" class="notification">
+            <i class="fas fa-check-circle"></i>
+            <span id="notification-message">Saved successfully</span>
+        </div>
+
         <!-- Auth Section -->
         <div id="auth-section" class="auth-section">
             <div class="auth-container">
@@ -992,12 +1025,12 @@
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDMNC-oVXg6eCxirQgBIaIAzJijUgBLeP4",
-  authDomain: "jw-ministry-tracker.firebaseapp.com",
-  projectId: "jw-ministry-tracker",
-  storageBucket: "jw-ministry-tracker.firebasestorage.app",
-  messagingSenderId: "920829084379",
-  appId: "1:920829084379:web:afce3269d46113c398c2fe",
-  measurementId: "G-RM916N5WTX"
+            authDomain: "jw-ministry-tracker.firebaseapp.com",
+            projectId: "jw-ministry-tracker",
+            storageBucket: "jw-ministry-tracker.firebasestorage.app",
+            messagingSenderId: "920829084379",
+            appId: "1:920829084379:web:afce3269d46113c398c2fe",
+            measurementId: "G-RM916N5WTX"
         };
 
         // Initialize Firebase
@@ -1018,6 +1051,8 @@
         const logoutBtn = document.getElementById('logout-btn');
         const userName = document.getElementById('user-name');
         const userAvatar = document.getElementById('user-avatar');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
 
         // Navigation
         const navBtns = document.querySelectorAll('.nav-btn');
@@ -1156,6 +1191,17 @@
                     closeAllModals();
                 }
             });
+        }
+
+        // Show notification
+        function showNotification(message, isError = false) {
+            notificationMessage.textContent = message;
+            notification.className = isError ? 'notification error' : 'notification';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
         }
 
         // Auth functions
@@ -1870,7 +1916,7 @@
             };
 
             if (!contactData.name) {
-                alert('Please enter a name');
+                showNotification('Please enter a name', true);
                 return;
             }
 
@@ -1879,21 +1925,23 @@
                 delete contactData.createdAt; // Don't update the created timestamp
                 db.collection('contacts').doc(currentContactId).update(contactData)
                     .then(() => {
+                        showNotification('Contact updated successfully');
                         closeAllModals();
                     })
                     .catch(error => {
                         console.error('Error updating contact:', error);
-                        alert('Error updating contact');
+                        showNotification('Error updating contact', true);
                     });
             } else {
                 // Add new contact
                 db.collection('contacts').add(contactData)
                     .then(() => {
+                        showNotification('Contact added successfully');
                         closeAllModals();
                     })
                     .catch(error => {
                         console.error('Error adding contact:', error);
-                        alert('Error adding contact');
+                        showNotification('Error adding contact', true);
                     });
             }
         }
@@ -1914,12 +1962,12 @@
             };
 
             if (!pioneerData.date) {
-                alert('Please enter a date');
+                showNotification('Please enter a date', true);
                 return;
             }
 
             if (pioneerData.hours <= 0) {
-                alert('Please enter at least some hours');
+                showNotification('Please enter at least some hours', true);
                 return;
             }
 
@@ -1928,21 +1976,23 @@
                 delete pioneerData.createdAt; // Don't update the created timestamp
                 db.collection('pioneerRecords').doc(currentPioneerId).update(pioneerData)
                     .then(() => {
+                        showNotification('Pioneer record updated successfully');
                         closeAllModals();
                     })
                     .catch(error => {
                         console.error('Error updating pioneer record:', error);
-                        alert('Error updating pioneer record');
+                        showNotification('Error updating pioneer record', true);
                     });
             } else {
                 // Add new record
                 db.collection('pioneerRecords').add(pioneerData)
                     .then(() => {
+                        showNotification('Pioneer record added successfully');
                         closeAllModals();
                     })
                     .catch(error => {
                         console.error('Error adding pioneer record:', error);
-                        alert('Error adding pioneer record');
+                        showNotification('Error adding pioneer record', true);
                     });
             }
         }
@@ -1961,7 +2011,7 @@
             };
 
             if (!publisherData.date) {
-                alert('Please enter a date');
+                showNotification('Please enter a date', true);
                 return;
             }
 
@@ -1970,21 +2020,23 @@
                 delete publisherData.createdAt; // Don't update the created timestamp
                 db.collection('publisherRecords').doc(currentPublisherId).update(publisherData)
                     .then(() => {
+                        showNotification('Publisher record updated successfully');
                         closeAllModals();
                     })
                     .catch(error => {
                         console.error('Error updating publisher record:', error);
-                        alert('Error updating publisher record');
+                        showNotification('Error updating publisher record', true);
                     });
             } else {
                 // Add new record
                 db.collection('publisherRecords').add(publisherData)
                     .then(() => {
+                        showNotification('Publisher record added successfully');
                         closeAllModals();
                     })
                     .catch(error => {
                         console.error('Error adding publisher record:', error);
-                        alert('Error adding publisher record');
+                        showNotification('Error adding publisher record', true);
                     });
             }
         }
@@ -1994,11 +2046,11 @@
             if (confirm('Are you sure you want to delete this contact?')) {
                 db.collection('contacts').doc(id).delete()
                     .then(() => {
-                        console.log('Contact deleted successfully');
+                        showNotification('Contact deleted successfully');
                     })
                     .catch(error => {
                         console.error('Error deleting contact:', error);
-                        alert('Error deleting contact');
+                        showNotification('Error deleting contact', true);
                     });
             }
         }
@@ -2007,11 +2059,11 @@
             if (confirm('Are you sure you want to delete this pioneer record?')) {
                 db.collection('pioneerRecords').doc(id).delete()
                     .then(() => {
-                        console.log('Pioneer record deleted successfully');
+                        showNotification('Pioneer record deleted successfully');
                     })
                     .catch(error => {
                         console.error('Error deleting pioneer record:', error);
-                        alert('Error deleting pioneer record');
+                        showNotification('Error deleting pioneer record', true);
                     });
             }
         }
@@ -2020,11 +2072,11 @@
             if (confirm('Are you sure you want to delete this publisher record?')) {
                 db.collection('publisherRecords').doc(id).delete()
                     .then(() => {
-                        console.log('Publisher record deleted successfully');
+                        showNotification('Publisher record deleted successfully');
                     })
                     .catch(error => {
                         console.error('Error deleting publisher record:', error);
-                        alert('Error deleting publisher record');
+                        showNotification('Error deleting publisher record', true);
                     });
             }
         }
